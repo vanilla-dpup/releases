@@ -1,0 +1,179 @@
+name: saturday
+
+on:
+  schedule:
+    - cron: '0 0 * * SAT'
+  workflow_dispatch:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        include:
+          - arch: x86
+            compat-distro-version: bullseye
+          - arch: x86_64
+            compat-distro-version: bullseye64
+    steps:
+    - name: Clone woof-CE
+      run: git clone --depth 1 https://github.com/puppylinux-woof-CE/woof-CE ../woof-CE
+    - name: Create cache directories
+      run: |
+        mkdir -p local-repositories petbuild-sources petbuild-cache petbuild-output
+        ln -s `pwd`/local-repositories ../local-repositories
+    - name: Get cached local-repositories
+      uses: actions/cache@v2
+      with:
+        path: local-repositories
+        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-local-repositories-${{ github.sha }}
+        restore-keys: |
+          ${{ github.workflow }}-local-repositories-
+    - name: Prepare build environment
+      run: |
+        [ -f local-repositories/vercmp ] || (curl https://raw.githubusercontent.com/puppylinux-woof-CE/initrd_progs/master/pkg/w_apps_static/w_apps/vercmp.c | gcc -x c -o ../local-repositories/vercmp -)
+        sudo install -m 755 local-repositories/vercmp /usr/local/bin/vercmp
+        sudo install -D -m 644 ../woof-CE/woof-code/rootfs-skeleton/usr/local/petget/categories.dat /usr/local/petget/categories.dat
+        echo "dash dash/sh boolean false" | sudo debconf-set-selections
+        sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+        sudo ln -s bash /bin/ash
+    - name: merge2out
+      timeout-minutes: 5
+      run: |
+        cd ../woof-CE
+        yes "" | sudo -E ./merge2out woof-distro/${{ matrix.arch }}/debian/${{ matrix.compat-distro-version }}
+    - name: Set distro version
+      run: sudo sed -i s/^DISTRO_VERSION=.*/DISTRO_VERSION=9.0.${{ github.run_number }}/ ../woof-out_*/DISTRO_SPECS
+    - name: 0setup
+      timeout-minutes: 10
+      run: |
+        cd ../woof-out_*
+        sudo -E ./0setup
+    - name: 1download
+      timeout-minutes: 120
+      run: |
+        cd ../woof-out_*
+        sudo -E ./1download
+    - name: 2createpackages
+      timeout-minutes: 30
+      run: |
+        cd ../woof-out_*
+        echo | sudo -E ./2createpackages
+    - name: Get cached kernel-kit output
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        repo: puppylinux-woof-CE/woof-CE
+        branch: testing
+        workflow: kernel-kit.yml
+        workflow_conclusion: success
+        name: kernel-kit-output-5.10.x-${{ matrix.arch }}
+        path: output
+    - name: Move cached kernel-kit output
+      run: sudo mv output ../woof-out_*/kernel-kit/
+    - name: Get cached petbuild-sources
+      uses: actions/cache@v2
+      with:
+        path: petbuild-sources
+        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-sources-${{ github.sha }}
+        restore-keys: |
+          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-sources-
+    - name: Get cached petbuild-cache
+      if: matrix.arch == 'arm' && github.event_name != 'workflow_dispatch'
+      uses: actions/cache@v2
+      with:
+        path: petbuild-cache
+        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-cache-${{ github.sha }}
+        restore-keys: |
+          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-cache-
+    - name: Get cached petbuild-output
+      if: github.event_name != 'workflow_dispatch'
+      uses: actions/cache@v2
+      with:
+        path: petbuild-output
+        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-output-${{ github.sha }}
+        restore-keys: |
+          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-output-
+    - name: Install 3builddistro dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends patchelf
+    - name: Install cdrtools
+      run: |
+        [ -f local-repositories/mkisofs ] || (curl -L https://sourceforge.net/projects/cdrtools/files/alpha/cdrtools-3.02a09.tar.bz2/download | tar -xjf- && cd cdrtools-3.02 && make -j`nproc` && mv mkisofs/OBJ/x86_64-linux-cc/mkisofs ../local-repositories/mkisofs)
+        sudo install -m 755 local-repositories/mkisofs /usr/local/bin/mkisofs
+    - name: 3builddistro
+      timeout-minutes: 180
+      run: |
+        sudo chown -R root:root petbuild-output
+        sudo mv petbuild-{sources,cache,output} ../woof-out_*/
+        cd ../woof-out_*
+        sudo -E HOME=/root ./3builddistro release
+        sudo mv petbuild-{sources,cache,output} $GITHUB_WORKSPACE/
+    - name: Move build output
+      run: |
+        for i in `ls ../woof-out_*/woof-output-*/*.{sfs,iso} 2>/dev/null`; do sudo mv -f $i .; done
+        sudo mv -f ../woof-out_*/kernel-kit/output/kernel_sources-5.10-kernel-kit.sfs .
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: vanilladpup-${{ matrix.arch }}-9.0.${{ github.run_number }}
+        release_name: vanilladpup-${{ matrix.arch }}-9.0.${{ github.run_number }}
+        prerelease: false
+    - name: Upload ISO
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: vanilladpup-9.0.${{ github.run_number }}.iso
+        asset_name: vanilladpup-9.0.${{ github.run_number }}.iso
+        asset_content_type: application/octet-stream
+    - name: Upload devx
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: devx_vanilladpup_9.0.${{ github.run_number }}.sfs
+        asset_name: devx_vanilladpup_9.0.${{ github.run_number }}.sfs
+        asset_content_type: application/octet-stream
+    - name: Upload docx
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: docx_vanilladpup_9.0.${{ github.run_number }}.sfs
+        asset_name: docx_vanilladpup_9.0.${{ github.run_number }}.sfs
+        asset_content_type: application/octet-stream
+    - name: Upload nlsx
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: nlsx_vanilladpup_9.0.${{ github.run_number }}.sfs
+        asset_name: nlsx_vanilladpup_9.0.${{ github.run_number }}.sfs
+        asset_content_type: application/octet-stream
+    - name: Upload kernel sources
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: kernel_sources-5.10-kernel-kit.sfs
+        asset_name: kernel_sources-5.10-kernel-kit.sfs
+        asset_content_type: application/octet-stream
+    - name: Delete old releases
+      uses: dev-drprasad/delete-older-releases@v0.2.0
+      with:
+        keep_latest: 2
+        delete_tag_pattern: vanilladpup-${{ matrix.arch }}-9.0.
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

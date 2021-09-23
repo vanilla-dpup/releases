@@ -1,0 +1,1 @@
+This repository builds Vanilla Dpup using latest [woof-CE](https://github.com/puppylinux-woof-CE/woof-CE) on Saturdays.
