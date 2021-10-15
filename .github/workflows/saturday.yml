@@ -19,7 +19,7 @@ jobs:
             compat-distro-version: bullseye64
     steps:
     - name: Clone woof-CE
-      run: git clone --depth 1 https://github.com/puppylinux-woof-CE/woof-CE ../woof-CE
+      run: git clone -b stable --depth 1 https://github.com/puppylinux-woof-CE/woof-CE ../woof-CE
     - name: Create cache directories
       run: |
         mkdir -p local-repositories petbuild-sources petbuild-cache petbuild-output
