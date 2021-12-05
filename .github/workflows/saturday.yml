@@ -111,6 +111,13 @@ jobs:
         cd ../woof-out_*
         sudo -E HOME=/root ./3builddistro release
         sudo mv petbuild-{sources,cache,output} $GITHUB_WORKSPACE/
+    - name: Install 3builddistro dependencies
+      run: sudo apt-get install -y --no-install-recommends parted
+    - name: iso2img
+      if: matrix.arch == 'x86_64'
+      run: |
+        cd ../woof-out_*
+        ../iso2img.sh ./woof-output-*/*.iso ../vanilladpup-9.0.${{ github.run_number }}-uefi.img
     - name: Move build output
       run: |
         for i in `ls ../woof-out_*/woof-output-*/*.{sfs,iso} 2>/dev/null`; do sudo mv -f $i .; done
@@ -132,6 +139,16 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: vanilladpup-9.0.${{ github.run_number }}.iso
         asset_name: vanilladpup-9.0.${{ github.run_number }}.iso
+        asset_content_type: application/octet-stream
+    - name: Upload UEFI image
+      if: matrix.arch == 'x86_64'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: vanilladpup-9.0.${{ github.run_number }}-uefi.img
+        asset_name: vanilladpup-9.0.${{ github.run_number }}-uefi.img
         asset_content_type: application/octet-stream
     - name: Upload devx
       uses: actions/upload-release-asset@v1
