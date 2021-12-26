@@ -109,7 +109,7 @@ jobs:
         sudo chown -R root:root petbuild-output
         sudo mv petbuild-{sources,cache,output} ../woof-out_*/
         cd ../woof-out_*
-        sudo -E HOME=/root BUILD_ISO=no ./3builddistro release
+        sudo -E HOME=/root BUILD_ISO=no FRUGALIFY=yes ./3builddistro release
         for i in woof-output-*/*.img; do sudo gzip -1 $i; done
         sudo mv -vf woof-output-*/*.{sfs,img.gz,tar} $GITHUB_WORKSPACE/
         sudo -E HOME=/root ./3builddistro release
