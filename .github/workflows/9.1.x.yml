@@ -107,7 +107,15 @@ jobs:
         for i in woof-output-*/*.img; do sudo gzip -1 $i; done
         sudo mv -vf woof-output-*/*.{img.gz,tar} $GITHUB_WORKSPACE/
         sudo mv petbuild-{sources,cache,output} $GITHUB_WORKSPACE/
-        sudo mv kernel-kit/output/kernel_sources-5.10-kernel-kit.sfs $GITHUB_WORKSPACE/
+        sudo unsquashfs -d kernel_sources kernel-kit/output/kernel_sources-5.10-kernel-kit.sfs
+        sudo rm -f kernel-kit/output/kernel_sources-5.10-kernel-kit.sfs
+        sudo unsquashfs -d sandbox3/zdrv sandbox3/build/zdrv_vanilladpup_9.1.${{ github.run_number }}.sfs
+        . sandbox3/zdrv/etc/modules/build.conf-*
+        sudo mv -f kernel_sources/lib kernel_sources/usr/
+        sudo rm -f ../../../src/linux kernel_sources/usr/lib/modules/5.10.0/{build,source}
+        sudo ln -s ../../../src/linux kernel_sources/usr/lib/modules/5.10.0/build
+        sudo ln -s ../../../src/linux kernel_sources/usr/lib/modules/5.10.0/source
+        sudo mksquashfs kernel_sources $GITHUB_WORKSPACE/kernel_sources-5.10-kernel-kit.sfs $COMP
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
