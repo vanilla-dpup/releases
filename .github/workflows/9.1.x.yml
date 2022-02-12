@@ -22,14 +22,19 @@ jobs:
       run: |
         mkdir -p local-repositories petbuild-sources petbuild-cache petbuild-output
         ln -s `pwd`/local-repositories ../local-repositories
+    - name: Get cache key timestamp
+      id: get_cache_key_timestamp
+      run: |
+        echo "::set-output name=timestamp::$(/bin/date -u "+%Y%U")"
+      shell: bash
     - name: Get cached local-repositories
       if: github.event_name != 'workflow_dispatch'
       uses: actions/cache@v2
       with:
         path: local-repositories
-        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-local-repositories-${{ github.sha }}
+        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-local-repositories-${{ steps.get_cache_key_timestamp.outputs.timestamp }}-${{ github.sha }}
         restore-keys: |
-          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-local-repositories-
+          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-local-repositories-${{ steps.get_cache_key_timestamp.outputs.timestamp }}-
     - name: Prepare build environment
       run: |
         [ -f local-repositories/vercmp ] || (curl https://raw.githubusercontent.com/puppylinux-woof-CE/initrd_progs/master/pkg/w_apps_static/w_apps/vercmp.c | gcc -x c -o ../local-repositories/vercmp -)
@@ -76,25 +81,25 @@ jobs:
       uses: actions/cache@v2
       with:
         path: petbuild-sources
-        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-sources-${{ github.sha }}
+        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-sources-${{ steps.get_cache_key_timestamp.outputs.timestamp }}-${{ github.sha }}
         restore-keys: |
-          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-sources-
+          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-sources-${{ steps.get_cache_key_timestamp.outputs.timestamp }}-
     - name: Get cached petbuild-cache
       if: matrix.arch == 'arm' && github.event_name != 'workflow_dispatch'
       uses: actions/cache@v2
       with:
         path: petbuild-cache
-        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-cache-${{ github.sha }}
+        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-cache-${{ steps.get_cache_key_timestamp.outputs.timestamp }}-${{ github.sha }}
         restore-keys: |
-          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-cache-
+          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-cache-${{ steps.get_cache_key_timestamp.outputs.timestamp }}-
     - name: Get cached petbuild-output
       if: github.event_name != 'workflow_dispatch'
       uses: actions/cache@v2
       with:
         path: petbuild-output
-        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-output-${{ github.sha }}
+        key: ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-output-${{ steps.get_cache_key_timestamp.outputs.timestamp }}-${{ github.sha }}
         restore-keys: |
-          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-output-
+          ${{ github.workflow }}-${{ matrix.arch }}-debian-${{ matrix.compat-distro-version }}-petbuild-output-${{ steps.get_cache_key_timestamp.outputs.timestamp }}-
     - name: Install 3builddistro dependencies
       run: |
         sudo apt-get update -qq
