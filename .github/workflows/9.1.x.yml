@@ -114,6 +114,7 @@ jobs:
         for i in woof-output-*/*.img; do sudo gzip -1 $i; done
         sudo mv -vf woof-output-*/*.{img.gz,tar} $GITHUB_WORKSPACE/
         sudo mv petbuild-{sources,cache,output} $GITHUB_WORKSPACE/
+        sudo mv kernel-kit/output/kernel_sources-*.sfs $GITHUB_WORKSPACE/kernel_sources-9.1.${{ github.run_number }}.sfs
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -150,6 +151,15 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: vanilladpup-9.1.${{ github.run_number }}.tar
         asset_name: vanilladpup-9.1.${{ github.run_number }}.tar
+        asset_content_type: application/octet-stream
+    - name: Upload kernel sources
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: kernel_sources-9.1.${{ github.run_number }}.sfs
+        asset_name: kernel_sources-9.1.${{ github.run_number }}.sfs
         asset_content_type: application/octet-stream
     - name: Delete old releases
       uses: dev-drprasad/delete-older-releases@v0.2.0
