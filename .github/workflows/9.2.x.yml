@@ -119,8 +119,9 @@ jobs:
         sudo -E HOME=/root XDG_CONFIG_HOME=/root/.config ./3builddistro release
         sudo mv -vf woof-output-*/*.iso $GITHUB_WORKSPACE/
         sudo mv petbuild-{sources,cache,output} $GITHUB_WORKSPACE/
-        sudo mv kernel-kit/output/kernel_sources-*.sfs .
-        sudo tar -f $GITHUB_WORKSPACE/vanilladpup-9.2.0-extra.tar -c `ls *{x,drv}_*.sfs 2>/dev/null` kernel_sources-*.sfs
+        sudo mv kernel-kit/output/kernel_sources-*.sfs woof-output-*/
+        cd woof-output-*
+        sudo tar -f $GITHUB_WORKSPACE/vanilladpup-9.2.0-extra.tar -c docx_vanilladpup_9.2.0.sfs nlsx_vanilladpup_9.2.0.sfs kernel_sources-*.sfs
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
