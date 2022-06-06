@@ -133,7 +133,7 @@ jobs:
       with:
         tag_name: vanilladpup-${{ matrix.arch }}-${{ steps.get_version.outputs.version }}
         release_name: vanilladpup-${{ matrix.arch }}-${{ steps.get_version.outputs.version }}
-        prerelease: true
+        prerelease: false
     - name: Upload ISO image
       uses: actions/upload-release-asset@v1
       env:
