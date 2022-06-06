@@ -52,7 +52,7 @@ jobs:
         yes "" | sudo -E ./merge2out woof-distro/${{ matrix.arch }}/debian/${{ matrix.compat-distro-version }}
     - name: Get version number
       id: get_version
-      run: echo "::set-output name=version::9.2.$((${{ github.run_number }} - 1))"
+      run: echo "::set-output name=version::9.2.$((${{ github.run_number }} - 20))"
     - name: Set distro version
       run: sudo sed -i s/^DISTRO_VERSION=.*/DISTRO_VERSION=${{ steps.get_version.outputs.version }}/ ../woof-out_*/DISTRO_SPECS
     - name: 0setup
