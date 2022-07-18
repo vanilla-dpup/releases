@@ -50,6 +50,7 @@ jobs:
       run: |
         cd ../woof-CE
         yes "" | sudo -E ./merge2out woof-distro/${{ matrix.arch }}/debian/${{ matrix.compat-distro-version }}
+        sudo chown -R root:root ../woof-out_*
     - name: Get version number
       id: get_version
       run: echo "::set-output name=version::9.2.$((${{ github.run_number }} - 20))"
