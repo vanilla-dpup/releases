@@ -53,7 +53,7 @@ jobs:
         sudo chown -R root:root ../woof-out_*
     - name: Get version number
       id: get_version
-      run: echo "::set-output name=version::9.2.$((${{ github.run_number }} - 20))"
+      run: echo "::set-output name=version::9.2.$((${{ github.run_number }} - 21))"
     - name: Set distro version
       run: sudo sed -i s/^DISTRO_VERSION=.*/DISTRO_VERSION=${{ steps.get_version.outputs.version }}/ ../woof-out_*/DISTRO_SPECS
     - name: 0setup
