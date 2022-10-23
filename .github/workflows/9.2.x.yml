@@ -78,7 +78,7 @@ jobs:
         branch: testing
         workflow: kernel-kit.yml
         workflow_conclusion: success
-        name: kernel-kit-output-usrmerge-aufs-5.10.x-${{ matrix.arch }}
+        name: kernel-kit-output-usrmerge-5.10.x-${{ matrix.arch }}
         path: output
     - name: Move cached kernel-kit output
       run: sudo mv output ../woof-out_*/kernel-kit/
