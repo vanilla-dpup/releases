@@ -154,7 +154,7 @@ jobs:
         asset_name: vanilladpup-${{ steps.get_version.outputs.version }}-extra.tar
         asset_content_type: application/octet-stream
     - name: Delete old releases
-      uses: dev-drprasad/delete-older-releases@v0.2.0
+      uses: dev-drprasad/delete-older-releases@v0.2.1
       with:
         keep_latest: 2
         delete_tag_pattern: vanilladpup-${{ matrix.arch }}-9.2.
