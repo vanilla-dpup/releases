@@ -1,0 +1,117 @@
+name: 10.0.x
+
+on:
+  schedule:
+    - cron: '0 0 * * SAT'
+  workflow_dispatch:
+    branches:
+      - master
+
+jobs:
+  xorg64:
+    uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-10.0.x
+    with:
+      repo: vanilla-dpup/woof-CE
+      ref: vanilladpup-10.0.x
+      name: "Vanilla Dpup"
+      version: 10.0.0-beta${{ github.run_number }}
+      arch: x86_64
+      compat-distro: debian
+      compat-distro-version: bookworm64
+      kernel: debian-bookworm
+      prefix: vanilladpup
+      artifact: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}-xorg
+      retention: 1
+      variant: xorg
+  xwayland64:
+    uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-10.0.x
+    with:
+      repo: vanilla-dpup/woof-CE
+      ref: vanilladpup-10.0.x
+      name: "Vanilla Dpup"
+      version: 10.0.0-beta${{ github.run_number }}
+      arch: x86_64
+      compat-distro: debian
+      compat-distro-version: bookworm64
+      kernel: debian-bookworm
+      prefix: vanilladpup
+      artifact: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}-xwayland
+      retention: 1
+      variant: xwayland
+  xorg32:
+    uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-10.0.x
+    with:
+      repo: vanilla-dpup/woof-CE
+      ref: vanilladpup-10.0.x
+      name: "Vanilla Dpup"
+      version: 10.0.0-beta${{ github.run_number }}
+      arch: x86
+      compat-distro: debian
+      compat-distro-version: bookworm
+      kernel: debian-bookworm
+      prefix: vanilladpup
+      artifact: vanilladpup-x86-10.0.0-beta${{ github.run_number }}-xorg
+      retention: 1
+      variant: xorg
+  upload64:
+    needs: [xorg64, xwayland64]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Download xorg build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}-xorg
+          path: xorg
+      - name: Download xwayland build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}-xwayland
+          path: xwayland
+      - name: Rename ISO
+        run: |
+          mv -f xorg/*.iso vanilladpup-10.0.0-beta${{ github.run_number }}.iso
+          mv -f xwayland/*.iso vanilladpup-10.0.0-beta${{ github.run_number }}-xwayland.iso
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}
+          tag_name: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}
+          fail_on_unmatched_files: true
+          files: |
+            *.iso
+            xorg/kernel_sources-*.sfs
+  upload32:
+    needs: xorg32
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Download xorg build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: vanilladpup-x86-10.0.0-beta${{ github.run_number }}-xorg
+          path: xorg
+      - name: Rename ISO
+        run: mv -f xorg/*.iso vanilladpup-10.0.0-beta${{ github.run_number }}.iso
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: vanilladpup-x86-10.0.0-beta${{ github.run_number }}
+          tag_name: vanilladpup-x86-10.0.0-beta${{ github.run_number }}
+          fail_on_unmatched_files: true
+          files: |
+            *.iso
+            xorg/kernel_sources-*.sfs
+  cleanup:
+    needs: [upload64, upload32]
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        arch: [x86_64, x86]
+    steps:
+      - name: Delete old ${{ matrix.arch }} releases
+        uses: dev-drprasad/delete-older-releases@v0.2.1
+        with:
+          keep_latest: 1
+          delete_tag_pattern: vanilladpup-${{ matrix.arch }}-10.0.
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
