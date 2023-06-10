@@ -14,13 +14,13 @@ jobs:
       repo: vanilla-dpup/woof-CE
       ref: vanilladpup-10.0.x
       name: "Vanilla Dpup"
-      version: 10.0.0-beta${{ github.run_number }}
+      version: 10.0.${{ github.run_number }}
       arch: x86_64
       compat-distro: debian
       compat-distro-version: bookworm64
       kernel: debian-bookworm
       prefix: vanilladpup
-      artifact: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}-xorg
+      artifact: vanilladpup-x86_64-10.0.${{ github.run_number }}-xorg
       retention: 1
       variant: xorg
   xwayland64:
@@ -29,13 +29,13 @@ jobs:
       repo: vanilla-dpup/woof-CE
       ref: vanilladpup-10.0.x
       name: "Vanilla Dpup"
-      version: 10.0.0-beta${{ github.run_number }}
+      version: 10.0.${{ github.run_number }}
       arch: x86_64
       compat-distro: debian
       compat-distro-version: bookworm64
       kernel: debian-bookworm
       prefix: vanilladpup
-      artifact: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}-xwayland
+      artifact: vanilladpup-x86_64-10.0.${{ github.run_number }}-xwayland
       retention: 1
       variant: xwayland
   xorg32:
@@ -44,13 +44,13 @@ jobs:
       repo: vanilla-dpup/woof-CE
       ref: vanilladpup-10.0.x
       name: "Vanilla Dpup"
-      version: 10.0.0-beta${{ github.run_number }}
+      version: 10.0.${{ github.run_number }}
       arch: x86
       compat-distro: debian
       compat-distro-version: bookworm
       kernel: debian-bookworm
       prefix: vanilladpup
-      artifact: vanilladpup-x86-10.0.0-beta${{ github.run_number }}-xorg
+      artifact: vanilladpup-x86-10.0.${{ github.run_number }}-xorg
       retention: 1
       variant: xorg
   upload64:
@@ -60,22 +60,22 @@ jobs:
       - name: Download xorg build artifact
         uses: actions/download-artifact@v3
         with:
-          name: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}-xorg
+          name: vanilladpup-x86_64-10.0.${{ github.run_number }}-xorg
           path: xorg
       - name: Download xwayland build artifact
         uses: actions/download-artifact@v3
         with:
-          name: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}-xwayland
+          name: vanilladpup-x86_64-10.0.${{ github.run_number }}-xwayland
           path: xwayland
       - name: Rename ISO
         run: |
-          mv -f xorg/*.iso vanilladpup-10.0.0-beta${{ github.run_number }}.iso
-          mv -f xwayland/*.iso vanilladpup-10.0.0-beta${{ github.run_number }}-xwayland.iso
+          mv -f xorg/*.iso vanilladpup-10.0.${{ github.run_number }}.iso
+          mv -f xwayland/*.iso vanilladpup-10.0.${{ github.run_number }}-xwayland.iso
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}
-          tag_name: vanilladpup-x86_64-10.0.0-beta${{ github.run_number }}
+          name: vanilladpup-x86_64-10.0.${{ github.run_number }}
+          tag_name: vanilladpup-x86_64-10.0.${{ github.run_number }}
           fail_on_unmatched_files: true
           files: |
             *.iso
@@ -87,15 +87,15 @@ jobs:
       - name: Download xorg build artifact
         uses: actions/download-artifact@v3
         with:
-          name: vanilladpup-x86-10.0.0-beta${{ github.run_number }}-xorg
+          name: vanilladpup-x86-10.0.${{ github.run_number }}-xorg
           path: xorg
       - name: Rename ISO
-        run: mv -f xorg/*.iso vanilladpup-10.0.0-beta${{ github.run_number }}.iso
+        run: mv -f xorg/*.iso vanilladpup-10.0.${{ github.run_number }}.iso
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: vanilladpup-x86-10.0.0-beta${{ github.run_number }}
-          tag_name: vanilladpup-x86-10.0.0-beta${{ github.run_number }}
+          name: vanilladpup-x86-10.0.${{ github.run_number }}
+          tag_name: vanilladpup-x86-10.0.${{ github.run_number }}
           fail_on_unmatched_files: true
           files: |
             *.iso
