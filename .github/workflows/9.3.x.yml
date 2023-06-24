@@ -22,6 +22,7 @@ jobs:
       prefix: vanilladpup
       artifact: vanilladpup-x86_64-9.3.${{ github.run_number }}
       retention: 1
+      runner: 'ubuntu-20.04'
   x86:
     uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-10.0.x
     with:
@@ -36,6 +37,7 @@ jobs:
       prefix: vanilladpup
       artifact: vanilladpup-x86-9.3.${{ github.run_number }}
       retention: 1
+      runner: 'ubuntu-20.04'
   upload:
     needs: [x86_64, x86]
     runs-on: ubuntu-20.04
