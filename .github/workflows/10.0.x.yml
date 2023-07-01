@@ -38,6 +38,21 @@ jobs:
       artifact: vanilladpup-x86_64-10.0.${{ github.run_number }}-xwayland
       retention: 1
       variant: xwayland
+  retro64:
+    uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-10.0.x
+    with:
+      repo: vanilla-dpup/woof-CE
+      ref: vanilladpup-10.0.x
+      name: "Vanilla Dpup"
+      version: 10.0.${{ github.run_number }}
+      arch: x86_64
+      compat-distro: debian
+      compat-distro-version: bookworm64
+      kernel: debian-bookworm
+      prefix: vanilladpup
+      artifact: vanilladpup-x86_64-10.0.${{ github.run_number }}-retro
+      retention: 1
+      variant: retro
   xorg32:
     uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-10.0.x
     with:
@@ -53,8 +68,23 @@ jobs:
       artifact: vanilladpup-x86-10.0.${{ github.run_number }}-xorg
       retention: 1
       variant: xorg
+  retro32:
+    uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-10.0.x
+    with:
+      repo: vanilla-dpup/woof-CE
+      ref: vanilladpup-10.0.x
+      name: "Vanilla Dpup"
+      version: 10.0.${{ github.run_number }}
+      arch: x86
+      compat-distro: debian
+      compat-distro-version: bookworm
+      kernel: debian-bookworm
+      prefix: vanilladpup
+      artifact: vanilladpup-x86-10.0.${{ github.run_number }}-retro
+      retention: 1
+      variant: retro
   upload64:
-    needs: [xorg64, xwayland64]
+    needs: [xorg64, xwayland64, retro64]
     runs-on: ubuntu-20.04
     steps:
       - name: Download xorg build artifact
@@ -67,10 +97,16 @@ jobs:
         with:
           name: vanilladpup-x86_64-10.0.${{ github.run_number }}-xwayland
           path: xwayland
+      - name: Download retro build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: vanilladpup-x86_64-10.0.${{ github.run_number }}-retro
+          path: retro
       - name: Rename ISO
         run: |
           mv -f xorg/*.iso vanilladpup-10.0.${{ github.run_number }}.iso
           mv -f xwayland/*.iso vanilladpup-10.0.${{ github.run_number }}-xwayland.iso
+          mv -f retro/*.iso vanilladpup-10.0.${{ github.run_number }}-retro.iso
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -81,7 +117,7 @@ jobs:
             *.iso
             xorg/kernel_sources-*.sfs
   upload32:
-    needs: xorg32
+    needs: [xorg32, retro32]
     runs-on: ubuntu-20.04
     steps:
       - name: Download xorg build artifact
@@ -89,8 +125,15 @@ jobs:
         with:
           name: vanilladpup-x86-10.0.${{ github.run_number }}-xorg
           path: xorg
+      - name: Download retro build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: vanilladpup-x86-10.0.${{ github.run_number }}-retro
+          path: retro
       - name: Rename ISO
-        run: mv -f xorg/*.iso vanilladpup-10.0.${{ github.run_number }}.iso
+        run: |
+          mv -f xorg/*.iso vanilladpup-10.0.${{ github.run_number }}.iso
+          mv -f retro/*.iso vanilladpup-10.0.${{ github.run_number }}-retro.iso
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
