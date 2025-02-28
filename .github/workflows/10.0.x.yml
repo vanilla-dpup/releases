@@ -88,17 +88,17 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Download xorg build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vanilladpup-x86_64-10.0.${{ github.run_number }}-xorg
           path: xorg
       - name: Download xwayland build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vanilladpup-x86_64-10.0.${{ github.run_number }}-xwayland
           path: xwayland
       - name: Download retro build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vanilladpup-x86_64-10.0.${{ github.run_number }}-retro
           path: retro
@@ -108,7 +108,7 @@ jobs:
           mv -f xwayland/*.iso vanilladpup-10.0.${{ github.run_number }}-xwayland.iso
           mv -f retro/*.iso vanilladpup-10.0.${{ github.run_number }}-retro.iso
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: vanilladpup-x86_64-10.0.${{ github.run_number }}
           tag_name: vanilladpup-x86_64-10.0.${{ github.run_number }}
@@ -121,12 +121,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Download xorg build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vanilladpup-x86-10.0.${{ github.run_number }}-xorg
           path: xorg
       - name: Download retro build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vanilladpup-x86-10.0.${{ github.run_number }}-retro
           path: retro
@@ -135,7 +135,7 @@ jobs:
           mv -f xorg/*.iso vanilladpup-10.0.${{ github.run_number }}.iso
           mv -f retro/*.iso vanilladpup-10.0.${{ github.run_number }}-retro.iso
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: vanilladpup-x86-10.0.${{ github.run_number }}
           tag_name: vanilladpup-x86-10.0.${{ github.run_number }}
@@ -151,7 +151,7 @@ jobs:
         arch: [x86_64, x86]
     steps:
       - name: Delete old ${{ matrix.arch }} releases
-        uses: dev-drprasad/delete-older-releases@v0.2.1
+        uses: dev-drprasad/delete-older-releases@v0.3.4
         with:
           keep_latest: 1
           delete_tag_pattern: vanilladpup-${{ matrix.arch }}-10.0.
