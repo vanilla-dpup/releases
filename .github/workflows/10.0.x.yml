@@ -85,7 +85,7 @@ jobs:
       variant: retro
   upload64:
     needs: [xorg64, xwayland64, retro64]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Download xorg build artifact
         uses: actions/download-artifact@v4
@@ -118,7 +118,7 @@ jobs:
             xorg/kernel_sources-*.sfs
   upload32:
     needs: [xorg32, retro32]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Download xorg build artifact
         uses: actions/download-artifact@v4
@@ -145,7 +145,7 @@ jobs:
             xorg/kernel_sources-*.sfs
   cleanup:
     needs: [upload64, upload32]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         arch: [x86_64, x86]
