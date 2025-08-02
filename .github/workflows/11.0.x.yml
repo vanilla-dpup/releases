@@ -1,0 +1,104 @@
+name: 11.0.x
+
+on:
+  schedule:
+    - cron: '0 0 2,16 * *'
+  workflow_dispatch:
+    branches:
+      - master
+
+jobs:
+  full:
+    uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-11.0.x
+    with:
+      repo: vanilla-dpup/woof-CE
+      ref: vanilladpup-11.0.x
+      name: "Vanilla Dpup"
+      version: 11.0.${{ github.run_number }}
+      arch: x86_64
+      compat-distro: debian
+      compat-distro-version: testing64
+      kernel: debian-testing
+      prefix: vanilladpup
+      artifact: vanilladpup-x86_64-11.0.${{ github.run_number }}-full
+      retention: 1
+  mini:
+    uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-11.0.x
+    with:
+      repo: vanilla-dpup/woof-CE
+      ref: vanilladpup-11.0.x
+      name: "Vanilla Dpup"
+      version: 11.0.${{ github.run_number }}
+      arch: x86_64
+      compat-distro: debian
+      compat-distro-version: testing64
+      kernel: debian-testing
+      prefix: vanilladpup
+      artifact: vanilladpup-x86_64-11.0.${{ github.run_number }}-mini
+      retention: 1
+      variant: mini
+  barebones:
+    uses: vanilla-dpup/woof-CE/.github/workflows/build.yml@vanilladpup-11.0.x
+    with:
+      repo: vanilla-dpup/woof-CE
+      ref: vanilladpup-11.0.x
+      name: "Vanilla Dpup"
+      version: 11.0.${{ github.run_number }}
+      arch: x86_64
+      compat-distro: debian
+      compat-distro-version: testing64
+      kernel: debian-testing
+      prefix: vanilladpup
+      artifact: vanilladpup-x86_64-11.0.${{ github.run_number }}-barebones
+      retention: 1
+      variant: barebones
+  upload:
+    needs: [full, mini, barebones]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download full build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vanilladpup-x86_64-11.0.${{ github.run_number }}-full
+          path: full
+      - name: Download mini build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vanilladpup-x86_64-11.0.${{ github.run_number }}-mini
+          path: mini
+      - name: Download barebones build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vanilladpup-x86_64-11.0.${{ github.run_number }}-barebones
+          path: barebones
+      - name: Rename files
+        run: |
+          for x in full mini barebones; do
+              mv -f $x/*-bios.img.gz vanilladpup-11.0.${{ github.run_number }}-$x-bios.img.gz || exit 1
+              mv -f $x/*-uefi.img.gz vanilladpup-11.0.${{ github.run_number }}-$x-uefi.img.gz || exit 1
+              mv -f $x/woof-CE.tar.gz woof-CE-$x.tar.gz || exit 1
+          done
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: vanilladpup-x86_64-11.0.${{ github.run_number }}
+          tag_name: vanilladpup-x86_64-11.0.${{ github.run_number }}
+          fail_on_unmatched_files: true
+          files: |
+            *.img.gz
+            woof-CE-*.tar.gz
+  cleanup:
+    needs: [upload]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        arch: [x86_64]
+    steps:
+      - name: Delete old ${{ matrix.arch }} releases
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        with:
+          keep_latest: 1
+          delete_tag_pattern: vanilladpup-${{ matrix.arch }}-11.0.
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
