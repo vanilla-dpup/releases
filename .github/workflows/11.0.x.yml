@@ -72,22 +72,22 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Download full build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vanilladpup-x86_64-11.0.${{ github.run_number }}-full
           path: full
       - name: Download mini build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vanilladpup-x86_64-11.0.${{ github.run_number }}-mini
           path: mini
       - name: Download barebones build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vanilladpup-x86_64-11.0.${{ github.run_number }}-barebones
           path: barebones
       - name: Download barebones-oldkernel build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vanilladpup-x86_64-11.0.${{ github.run_number }}-barebones-oldkernel
           path: barebones-oldkernel

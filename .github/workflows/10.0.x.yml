@@ -88,17 +88,17 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Download xorg build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vanilladpup-x86_64-10.0.${{ github.run_number }}-xorg
           path: xorg
       - name: Download xwayland build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vanilladpup-x86_64-10.0.${{ github.run_number }}-xwayland
           path: xwayland
       - name: Download retro build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vanilladpup-x86_64-10.0.${{ github.run_number }}-retro
           path: retro
@@ -121,12 +121,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Download xorg build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vanilladpup-x86-10.0.${{ github.run_number }}-xorg
           path: xorg
       - name: Download retro build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vanilladpup-x86-10.0.${{ github.run_number }}-retro
           path: retro
