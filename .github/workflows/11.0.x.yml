@@ -99,7 +99,7 @@ jobs:
               mv -f $x/woof-CE.tar.gz woof-CE-$x.tar.gz || exit 1
           done
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: vanilladpup-x86_64-11.0.${{ github.run_number }}
           tag_name: vanilladpup-x86_64-11.0.${{ github.run_number }}
@@ -114,11 +114,12 @@ jobs:
       matrix:
         arch: [x86_64]
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
       - name: Delete old ${{ matrix.arch }} releases
-        uses: dev-drprasad/delete-older-releases@v0.3.4
-        with:
-          keep_latest: 1
-          delete_tag_pattern: vanilladpup-${{ matrix.arch }}-11.0.
-          delete_tags: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release list --json tagName -q '.[] | .tagName | select(contains("vanilladpup-${{ matrix.arch }}-11.0."))' | \
+          tail -n +2 | \
+          xargs -I {} gh release delete {} -y --cleanup-tag
